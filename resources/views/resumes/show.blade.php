@@ -8,7 +8,7 @@
         <div>
             <span class="eyebrow">Resume check</span>
             <h1>{{ $resume->original_name }}</h1>
-            <p class="muted">Checked {{ $resume->created_at->format('F j, Y \a\t g:i A') }}</p>
+            <p class="muted">Current score for your saved, edited copy · Updated {{ $resume->updated_at->format('F j, Y \a\t g:i A') }}</p>
         </div>
         <div class="score-ring" style="--score: {{ $resume->ats_score }}%;" role="img" aria-label="ClearCV score: {{ $resume->ats_score }} out of 100">
             <div><strong>{{ $resume->ats_score }}</strong><span>out of 100</span></div>
@@ -18,7 +18,7 @@
     <div class="report-grid">
         <section class="panel findings-panel">
             <div class="list-heading"><div><span class="eyebrow">Your results</span><h2>What we found</h2></div><span class="count-pill">{{ count($resume->findings) }} checks</span></div>
-            <p class="muted report-intro">This is an explainable text-based review, not a prediction from an employer's ATS. Review each suggestion and only make changes that are accurate for you.</p>
+            <p class="muted report-intro">The “Matched X of Y” line is the optional job-keyword check, not your overall score; the overall score is shown above. Saving edits reruns the checks. A 100/100 score is possible only when the checks pass and the resume accurately reflects your experience, and it cannot guarantee an employer's ATS result.</p>
             <div class="finding-list">
                 @foreach ($resume->findings as $finding)
                     <article class="finding finding-{{ $finding['severity'] }}">
@@ -41,6 +41,31 @@
                             @if ($finding['recommendation'])
                                 <p class="recommendation"><strong>Suggestion:</strong> {{ $finding['recommendation'] }}</p>
                             @endif
+                            @if ($finding['category'] === 'Job match' && !empty($finding['missing_terms']))
+                                <form method="POST" action="{{ route('resumes.tailor', $resume) }}" class="form-stack">
+                                    @csrf
+                                    <fieldset>
+                                        <legend>Select only terms that accurately describe skills or experience you genuinely have:</legend>
+                                        @foreach ($finding['missing_terms'] as $term)
+                                            <label>
+                                                <input type="checkbox" name="confirmed_terms[]" value="{{ $term }}">
+                                                {{ $term }}
+                                            </label>
+                                        @endforeach
+                                    </fieldset>
+                                    <label>
+                                        <input type="checkbox" name="confirm_skills" value="1" required>
+                                        I confirm the selected terms are accurate and appropriate for my Skills section.
+                                    </label>
+                                    @foreach ($errors->getMessages() as $key => $messages)
+                                        @if (str_starts_with($key, 'confirmed_terms'))
+                                            <p class="field-error">{{ $messages[0] }}</p>
+                                        @endif
+                                    @endforeach
+                                    @error('confirm_skills')<p class="field-error">{{ $message }}</p>@enderror
+                                    <button class="button button-secondary button-full" type="submit">Add confirmed terms to Skills &amp; recalculate</button>
+                                </form>
+                            @endif
                         </div>
                     </article>
                 @endforeach
@@ -57,7 +82,7 @@
                 <label for="optimized_text">Resume content</label>
                 <textarea id="optimized_text" name="optimized_text" rows="25" maxlength="100000" required>{{ old('optimized_text', $resume->optimized_text) }}</textarea>
                 @error('optimized_text')<p class="field-error">{{ $message }}</p>@enderror
-                <button class="button button-full" type="submit">Save reviewed copy</button>
+                <button class="button button-full" type="submit">Save edits &amp; recalculate score</button>
             </form>
             <a class="button button-secondary button-full download-button" href="{{ route('resumes.download', $resume) }}">Download optimized PDF</a>
             <p class="field-hint">The original PDF is kept separately. Saving this copy does not change it.</p>

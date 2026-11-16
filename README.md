@@ -9,8 +9,10 @@ A Laravel web application for reviewing a resume's readability and relevance to 
 - Account registration, sign-in, sign-out, and a private resume dashboard.
 - PDF upload with file validation and text extraction. Files are stored on Laravel's private local disk.
 - Explainable checks for extracted text, contact details, common resume sections, and optional job-description terms.
-- An editable, whitespace-cleaned copy that preserves the extracted content and leaves substantive changes under the user's control.
-- Download of the reviewed copy as a clean, text-based PDF, plus report history and deletion.
+- An editable, whitespace-cleaned copy that preserves the extracted content, recalculates the score after edits, and leaves substantive changes under the user's control.
+- A job-tailoring action that lets users select missing job-description terms and confirm they genuinely have those skills before adding them to the Skills section and recalculating the score.
+- A profile review form for signed-in users; each user can publish one star-rated review, edit it, or remove it. Published reviews appear on the home page.
+- Download of the reviewed copy as a clean, text-based PDF without generated page numbers, plus report history and deletion.
 - Owner-scoped access to resume records, reports, and downloads.
 
 ## User workflow
@@ -19,7 +21,7 @@ A Laravel web application for reviewing a resume's readability and relevance to 
 2. **Upload a resume.** The user submits a PDF. The application validates the file type and size, stores it privately, and extracts readable text for analysis.
 3. **Review the ATS check.** The application evaluates extracted text, contact details, common resume sections, and—if supplied—relevance to selected terms in a target job description.
 4. **Understand the results.** A report presents an overall score, category-level findings, detected strengths, and actionable issues. Each suggestion should explain what to change and why.
-5. **Improve the resume.** Users can apply suggested edits and review the resulting content before export. Optimizations must preserve the user's facts and must not invent experience, skills, qualifications, or achievements.
+5. **Improve the resume.** Users can edit the copy directly or select missing job terms they confirm are accurate skills before adding them to the Skills section. The application does not invent experience, qualifications, or achievements; users should leave inaccurate terms unselected and review all changes.
 6. **Download and verify.** The user downloads an ATS-friendly PDF and reviews it before applying. The original resume remains unchanged unless the user explicitly chooses to replace it.
 
 ### Analysis and score guidance
@@ -30,7 +32,9 @@ The score should be calculated from checks the application can explain, rather t
 - Whether an email, phone number, and conventional experience, education, skills, and summary headings appear in the extracted text.
 - Up to 12 frequent, non-generic terms from an optional job description.
 
-The checker does not inspect visual layout, diagnose every parsing issue, or use an employer's ATS. The optimized copy is a whitespace-cleaned text version for the user to edit; it does not automatically rewrite or invent resume content.
+The “Matched X of Y” result is only the optional job-keyword comparison; it is not the overall resume score. Saving edits reruns the checks against the saved copy. The tailoring action accepts only currently missing terms and requires the user to confirm they genuinely have the selected skills. A perfect score is not forced, and a high score cannot guarantee an employer's result.
+
+The checker does not inspect visual layout, diagnose every parsing issue, or use an employer's ATS. The optimized copy starts as a whitespace-cleaned text version; users remain responsible for reviewing direct edits and every confirmed skill before downloading.
 
 Different employers and ATS vendors can interpret the same resume differently. A high score is not a guarantee of successful parsing, ranking, interview selection, or employment.
 
@@ -41,6 +45,7 @@ Different employers and ATS vendors can interpret the same resume differently. A
 - **Transparent results:** Show score components and actionable recommendations instead of relying on an unexplained number.
 - **Human review:** Let users inspect proposed changes and the exported PDF before using it.
 - **Privacy:** Uploaded files and reports stay in the user's account until they delete them. Resume contents are not sent to an external analysis service.
+- **Public reviews:** Review text and the display name chosen by the author are public on the home page immediately after submission. Users can edit or remove their review from their profile.
 - **Accessible, responsive interface:** Support keyboard navigation, clear validation messages, and common desktop and mobile screen sizes.
 
 ## Technology

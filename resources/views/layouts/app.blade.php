@@ -14,6 +14,7 @@
             <nav class="main-nav" aria-label="Main navigation">
                 @auth
                     <a href="{{ route('dashboard') }}">My resumes</a>
+                    <a href="{{ route('profile') }}">My profile</a>
                     <form method="POST" action="{{ route('logout') }}">
                         @csrf
                         <button class="nav-button" type="submit">Sign out</button>

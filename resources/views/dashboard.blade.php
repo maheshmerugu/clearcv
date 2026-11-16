@@ -41,7 +41,14 @@
                         <span class="muted">{{ $resume->created_at->format('M j, Y') }} · {{ $resume->job_description ? 'Job match included' : 'General check' }}</span>
                     </div>
                     <div class="list-score"><strong>{{ $resume->ats_score }}</strong><span>/100</span></div>
-                    <a class="text-link" href="{{ route('resumes.show', $resume) }}">View <span aria-hidden="true">→</span></a>
+                    <div class="resume-card-actions">
+                        <a class="text-link" href="{{ route('resumes.show', $resume) }}">View <span aria-hidden="true">→</span></a>
+                        <form method="POST" action="{{ route('resumes.destroy', $resume) }}" class="resume-delete-form" onsubmit="return confirm('Delete this resume and its report? This cannot be undone.');">
+                            @csrf
+                            @method('DELETE')
+                            <button class="delete-link" type="submit" aria-label="Delete {{ $resume->original_name }}">Delete</button>
+                        </form>
+                    </div>
                 </article>
             @empty
                 <div class="empty-state">
